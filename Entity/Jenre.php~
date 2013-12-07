@@ -1,0 +1,31 @@
+<?php
+
+namespace Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+
+/**
+ * @ORM\Entity
+ * @ORM\Table(name="jenre", indexes={@ORM\Index(name="name_idx", columns={"name"})})
+ */
+class Jenre
+{    
+    /**
+     * @ORM\Column(type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    public $id;
+
+    /**
+     * @ORM\Column(type="string", length=100)
+     */
+    public $name;
+    
+    /**
+     * @ORM\OneToMany(targetEntity="MovieJenre", mappedBy="jenres")
+     **/
+    public $movies_jenres;
+
+}

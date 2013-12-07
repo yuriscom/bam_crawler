@@ -1,0 +1,63 @@
+<?php
+
+namespace Entity;
+
+use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
+
+/**
+ * @ORM\Entity
+ * @ORM\Table(name="movie", indexes={@ORM\Index(name="title_idx", columns={"title"}), @ORM\Index(name="prime_id_idx", columns={"prime_id"})})
+ */
+class Movie
+{    
+    /**
+     * @ORM\Column(type="integer")
+     * @ORM\Id
+     * @ORM\GeneratedValue(strategy="AUTO")
+     */
+    public $id;
+
+    /**
+     * @ORM\Column(type="string", length=100)
+     */
+    public $prime_id;
+
+    /**
+     * @ORM\Column(type="string", length=255)
+     */
+    public $title;
+    
+    /**
+     * @ORM\Column(type="string", nullable=true)
+     */
+    public $description;
+    
+    /**
+     * @ORM\Column(type="string", length=100, nullable=true)
+     */
+    public $released;
+    
+    /**
+     * @ORM\Column(type="string", length=100, nullable=true)
+     */
+    public $runtime;
+    
+    /**
+     * @ORM\Column(type="string", length=200, nullable=true)
+     */
+    public $imdb_link;
+    
+    /**
+     * @ORM\OneToMany(targetEntity="MovieJenre", mappedBy="movies")
+     **/
+    public $movies_jenres;
+    
+    
+}
+
+
+/**
+     * @ORM\OneToMany(targetEntity="MovieCountry", mappedBy="movies")
+     **/
+    //public $movies_countries;
