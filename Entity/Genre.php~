@@ -24,16 +24,16 @@ class Genre
     public $name;
     
     /**
-     * @ORM\OneToMany(targetEntity="MovieGenre", mappedBy="genres")
+     * @ORM\OneToMany(targetEntity="MovieGenre", mappedBy="genre")
      **/
-    public $movies_genres;
+    public $genre_movies;
 
     /**
      * Constructor
      */
     public function __construct()
     {
-        $this->movies_genres = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->genre_movies = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     /**
@@ -70,35 +70,35 @@ class Genre
     }
 
     /**
-     * Add movies_genres
+     * Add genre_movies
      *
-     * @param \Entity\MovieGenre $moviesGenres
+     * @param \Entity\MovieGenre $genreMovies
      * @return Genre
      */
-    public function addMoviesGenre(\Entity\MovieGenre $moviesGenres)
+    public function addGenreMovie(\Entity\MovieGenre $genreMovies)
     {
-        $this->movies_genres[] = $moviesGenres;
+        $this->genre_movies[] = $genreMovies;
 
         return $this;
     }
 
     /**
-     * Remove movies_genres
+     * Remove genre_movies
      *
-     * @param \Entity\MovieGenre $moviesGenres
+     * @param \Entity\MovieGenre $genreMovies
      */
-    public function removeMoviesGenre(\Entity\MovieGenre $moviesGenres)
+    public function removeGenreMovie(\Entity\MovieGenre $genreMovies)
     {
-        $this->movies_genres->removeElement($moviesGenres);
+        $this->genre_movies->removeElement($genreMovies);
     }
 
     /**
-     * Get movies_genres
+     * Get genre_movies
      *
      * @return \Doctrine\Common\Collections\Collection 
      */
-    public function getMoviesGenres()
+    public function getGenreMovies()
     {
-        return $this->movies_genres;
+        return $this->genre_movies;
     }
 }

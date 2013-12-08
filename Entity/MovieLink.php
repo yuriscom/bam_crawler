@@ -32,8 +32,7 @@ class MovieLink
      * @ORM\ManyToOne(targetEntity="Movie", inversedBy="movie_link")
      * @ORM\JoinColumn(name="movie_id", referencedColumnName="id", onDelete="CASCADE")
      **/
-    public $movies;
-    
+    public $movie;
     
 
     /**
@@ -93,25 +92,25 @@ class MovieLink
     }
 
     /**
-     * Set movies
+     * Set movie
      *
-     * @param \Entity\Movie $movies
+     * @param \Entity\Movie $movie
      * @return MovieLink
      */
-    public function setMovies(\Entity\Movie $movies = null)
+    public function setMovie(\Entity\Movie $movie = null)
     {
-        $this->movies = $movies;
+        $this->movie = $movie;
 
         return $this;
     }
 
     /**
-     * Get movies
+     * Get movie
      *
      * @return \Entity\Movie 
      */
-    public function getMovies()
+    public function getMovie()
     {
-        return $this->movies;
+        return $this->movie;
     }
 }

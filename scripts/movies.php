@@ -1,10 +1,9 @@
 <?php
 
-
-
 class MoviesCrawler {
 
     private $baseUrl = "http://www.primewire.ag";
+    private $pagesPerRun = 3;
     private $db;
 
     public function __construct() {
@@ -13,18 +12,24 @@ class MoviesCrawler {
 
     public function parseMoviePage($url) {
         $movie = array();
+        $movie['links'] = array();
+        $movie['info'] = array();
+        $movie['info']['genres'] = array();
+        $movie['info']['countries'] = array();
+
         $querystring = str_replace($this->baseUrl, "", $url);
         preg_match("/\/watch-(\d*)-/", $querystring, $m);
         if (isset($m[1])) {
             $movie['prime_id'] = $m[1];
         }
-        
-        $rec = $this->db->getTable("Movie")->find($movie['prime_id']);
+
+        $rec = $this->db->getTable("Movie")->findBy(array("prime_id" => $movie['prime_id']));
+
         if ($rec) {
             return false;
         }
-        
-        
+
+
         $html = file_get_contents($url);
 
         $doc = new DOMDocument();
@@ -105,7 +110,7 @@ class MoviesCrawler {
 
             if ($linkList->length) {
                 $link = $this->baseUrl . $linkList->item(0)->getAttribute('href');
-                $movie['links'][] = array('url'=>$link,'version'=>$version);
+                $movie['links'][] = array('url' => $link, 'version' => $version);
             }
         }
 
@@ -114,83 +119,106 @@ class MoviesCrawler {
         if ($imdbLinkList->length) {
             $movie['imdb_link'] = $imdbLinkList->item(0)->getAttribute('href');
         }
-        
-        
+
+        if (!isset($movie['title'])) {
+            return false;
+        }
+
+        // saving to db
         $this->db->em->getConnection()->beginTransaction();
-        
+
         $movieObj = new Entity\Movie;
         $movieObj->prime_id = $movie['prime_id'];
         $movieObj->title = $movie['title'];
-        $movieObj->description = $movie['description'];
-        $movieObj->released = $movie['info']['released'];
-        $movieObj->runtime = $movie['info']['runtime'];
-        $movieObj->imdb_link = $movie['imdb_link'];
+        $movieObj->description = (isset($movie['description']) ? $movie['description'] : "");
+        $movieObj->released = (isset($movie['info']['released']) ? $movie['info']['released'] : "");
+        $movieObj->runtime = (isset($movie['info']['runtime']) ? $movie['info']['runtime'] : "");
+        $movieObj->imdb_link = (isset($movie['imdb_link']) ? $movie['imdb_link'] : "");
         $this->db->em->persist($movieObj);
         $this->db->em->flush();
-        
+
         foreach ($movie['links'] as $link) {
-            $linkObj = new Entity\MovieLink;
-            $linkObj->movie_id = $movieObj->id;
+            $linkObj = new Entity\MovieLink();
+            $linkObj->movie = $movieObj;
             $linkObj->link = $link['url'];
             $linkObj->version = $link['version'];
             $this->db->em->persist($linkObj);
             $this->db->em->flush();
         }
-        
-        if (is_array($movie['info']['genres'])) {
-            foreach ($movie['info']['genres'] as $jenre) {
-                $jenreObj = $this->db->getTable("genre")->findBy(array("name"=>$jenre));
-                p($jenreObj); die;
 
+
+        foreach ($movie['info']['genres'] as $genre) {
+            $genreObjAr = $this->db->getTable("Genre")->findBy(array("name" => $genre));
+            if (!count($genreObjAr)) {
+                $genreObj = new Entity\Genre();
+                $genreObj->name = $genre;
+                $this->db->em->persist($genreObj);
+                $this->db->em->flush();
+            } else {
+                $genreObj = current($genreObjAr);
             }
+
+            $movieGenreObj = new Entity\MovieGenre();
+            $movieGenreObj->movie = $movieObj;
+            $movieGenreObj->genre = $genreObj;
+            $this->db->em->persist($movieGenreObj);
+            $this->db->em->flush();
         }
-        
-        
-        
-        
+
+
+
+        foreach ($movie['info']['countries'] as $country) {
+            $countryObjAr = $this->db->getTable("Country")->findBy(array("name" => $country));
+            if (!count($countryObjAr)) {
+                $countryObj = new Entity\Country;
+                $countryObj->name = $country;
+                $this->db->em->persist($countryObj);
+                $this->db->em->flush();
+            } else {
+                $countryObj = current($countryObjAr);
+            }
+
+            $movieCountryObj = new Entity\MovieCountry();
+            $movieCountryObj->movie = $movieObj;
+            $movieCountryObj->country = $countryObj;
+            $this->db->em->persist($movieCountryObj);
+            $this->db->em->flush();
+        }
+
+
         $this->db->em->getConnection()->commit();
-        
-        
-        
-        die("ok");
-        return $movie;
+
+        return true;
     }
 
-    public function parseMoviesPage($url) {
-        $html = file_get_contents($url);
-        $doc = new DOMDocument();
-        @$doc->loadHTML($html);
-        $xpath = new DOMXPath($doc);
-        $query = "//div[@class='index_item index_item_ie']";
-        $resultsList = $xpath->query($query);
-        for ($i = 0; $i < $resultsList->length; $i++) {
-            $curNode = $resultsList->item($i);
-            $linkNode = $xpath->query("a", $curNode)->item(0);
-            $link = $this->baseUrl . $linkNode->getAttribute('href');
-            $movie = $this->parseMoviePage($link);
-            var_dump($movie);
-            die;
+    public function parseMoviesPage() {
+        $statusObj = $this->db->getTable("CrawlerStatus")->find(1);
+        $page = $statusObj->page + 1;
+        for ($i = $page; $i <= $page+$this->pagesPerRun; $i++) {
+            $url = $this->baseUrl . "/?sort=alphabet&page=" . $i;
+            $html = file_get_contents($url);
+            $doc = new DOMDocument();
+            @$doc->loadHTML($html);
+            $xpath = new DOMXPath($doc);
+            $query = "//div[@class='index_item index_item_ie']";
+            $resultsList = $xpath->query($query);
+            for ($i = 0; $i < $resultsList->length; $i++) {
+                $curNode = $resultsList->item($i);
+                $linkNode = $xpath->query("a", $curNode)->item(0);
+                $link = $this->baseUrl . $linkNode->getAttribute('href');
+                $this->parseMoviePage($link);
+            }
         }
     }
 
 }
 
 
-
-
-
-//$q = $em->createQueryBuilder()->select('u')->from('Entity\User','u')->getQuery();
-//$res = $q->getArrayResult();
-//p($res);
-//die; 
-
-$url = "http://www.primewire.ag/?sort=date";
 $crawler = new MoviesCrawler();
-//$crawler->parseMoviesPage($url);
-$crawler->parseMoviePage("http://www.primewire.ag/watch-226806-Race-Against-Time");
+$crawler->parseMoviesPage();
+//$crawler->parseMoviePage("http://www.primewire.ag/watch-226806-Race-Against-Time");
 //$crawler->parseMoviePage("http://www.primewire.ag/watch-2743041-The-Night-Clerk");
 
-// http://www.primewire.ag/?sort=date
 
 
 

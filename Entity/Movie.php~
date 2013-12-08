@@ -49,26 +49,29 @@ class Movie
     public $imdb_link;
     
     /**
-     * @ORM\OneToMany(targetEntity="MovieGenre", mappedBy="movies")
+     * @ORM\OneToMany(targetEntity="MovieGenre", mappedBy="movie")
      **/
-    public $movies_genres;
+    public $movie_genres;
     
     /**
-     * @ORM\OneToMany(targetEntity="MovieCountry", mappedBy="movies")
+     * @ORM\OneToMany(targetEntity="MovieCountry", mappedBy="movie")
      **/
-    public $movies_countries;
+    public $movie_countries;
     
     /**
-     * @ORM\OneToMany(targetEntity="MovieLink", mappedBy="movies")
+     * @ORM\OneToMany(targetEntity="MovieLink", mappedBy="movie")
      **/
     public $links;
     
+   
     /**
      * Constructor
      */
     public function __construct()
     {
-        $this->movies_jenres = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->movie_genres = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->movie_countries = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->links = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     /**
@@ -220,69 +223,69 @@ class Movie
     }
 
     /**
-     * Add movies_Genres
+     * Add movie_genres
      *
-     * @param \Entity\MovieGenre $moviesGenres
+     * @param \Entity\MovieGenre $movieGenres
      * @return Movie
      */
-    public function addMoviesGenre(\Entity\MovieGenre $moviesGenres)
+    public function addMovieGenre(\Entity\MovieGenre $movieGenres)
     {
-        $this->movies_genres[] = $moviesGenres;
+        $this->movie_genres[] = $movieGenres;
 
         return $this;
     }
 
     /**
-     * Remove movies_genres
+     * Remove movie_genres
      *
-     * @param \Entity\MovieGenre $moviesGenres
+     * @param \Entity\MovieGenre $movieGenres
      */
-    public function removeMoviesGenre(\Entity\MovieGenre $moviesGenres)
+    public function removeMovieGenre(\Entity\MovieGenre $movieGenres)
     {
-        $this->movies_genres->removeElement($moviesGenres);
+        $this->movie_genres->removeElement($movieGenres);
     }
 
     /**
-     * Get movies_genres
+     * Get movie_genres
      *
      * @return \Doctrine\Common\Collections\Collection 
      */
-    public function getMoviesGenres()
+    public function getMovieGenres()
     {
-        return $this->movies_genres;
+        return $this->movie_genres;
     }
 
     /**
-     * Add movies_countries
+     * Add movie_countries
      *
-     * @param \Entity\MovieCountry $moviesCountries
+     * @param \Entity\MovieCountry $movieCountries
      * @return Movie
      */
-    public function addMoviesCountry(\Entity\MovieCountry $moviesCountries)
+    public function addMovieCountry(\Entity\MovieCountry $movieCountries)
     {
-        $this->movies_countries[] = $moviesCountries;
+        $this->movie_countries[] = $movieCountries;
 
         return $this;
     }
 
     /**
-     * Remove movies_countries
+     * Remove movie_countries
      *
-     * @param \Entity\MovieCountry $moviesCountries
+     * @param \Entity\MovieCountry $movieCountries
      */
-    public function removeMoviesCountry(\Entity\MovieCountry $moviesCountries)
+    public function removeMovieCountry(\Entity\MovieCountry $movieCountries)
     {
-        $this->movies_countries->removeElement($moviesCountries);
+        $this->movie_countries->removeElement($movieCountries);
     }
 
     /**
-     * Get movies_countries
+     * Get movie_countries
      *
      * @return \Doctrine\Common\Collections\Collection 
      */
-    public function getMoviesCountries()
+    public function getMovieCountries()
     {
-        return $this->movies_countries;
+        return $this->movie_countries;
     }
 
     /**

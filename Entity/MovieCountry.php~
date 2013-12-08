@@ -22,13 +22,13 @@ class MovieCountry
      * @ORM\ManyToOne(targetEntity="Movie", inversedBy="movie_country")
      * @ORM\JoinColumn(name="movie_id", referencedColumnName="id", onDelete="CASCADE")
      **/
-    public $movies;
+    public $movie;
 
     /**
      * @ORM\ManyToOne(targetEntity="Country", inversedBy="movie_country")
      * @ORM\JoinColumn(name="country_id", referencedColumnName="id", onDelete="CASCADE")
      **/
-    public $countries;
+    public $country;
 
     /**
      * Get id
@@ -41,48 +41,48 @@ class MovieCountry
     }
 
     /**
-     * Set movies
+     * Set movie
      *
-     * @param \Entity\Movie $movies
+     * @param \Entity\Movie $movie
      * @return MovieCountry
      */
-    public function setMovies(\Entity\Movie $movies = null)
+    public function setMovie(\Entity\Movie $movie = null)
     {
-        $this->movies = $movies;
+        $this->movie = $movie;
 
         return $this;
     }
 
     /**
-     * Get movies
+     * Get movie
      *
      * @return \Entity\Movie 
      */
-    public function getMovies()
+    public function getMovie()
     {
-        return $this->movies;
+        return $this->movie;
     }
 
     /**
-     * Set countries
+     * Set country
      *
-     * @param \Entity\Country $countries
+     * @param \Entity\Country $country
      * @return MovieCountry
      */
-    public function setCountries(\Entity\Country $countries = null)
+    public function setCountry(\Entity\Country $country = null)
     {
-        $this->countries = $countries;
+        $this->country = $country;
 
         return $this;
     }
 
     /**
-     * Get countries
+     * Get country
      *
      * @return \Entity\Country 
      */
-    public function getCountries()
+    public function getCountry()
     {
-        return $this->countries;
+        return $this->country;
     }
 }

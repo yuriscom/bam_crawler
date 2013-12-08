@@ -22,13 +22,13 @@ class MovieGenre
      * @ORM\ManyToOne(targetEntity="Movie", inversedBy="movie_genre")
      * @ORM\JoinColumn(name="movie_id", referencedColumnName="id", onDelete="CASCADE")
      **/
-    public $movies;
+    public $movie;
 
     /**
      * @ORM\ManyToOne(targetEntity="Genre", inversedBy="movie_genre")
      * @ORM\JoinColumn(name="genre_id", referencedColumnName="id", onDelete="CASCADE")
      **/
-    public $genres;
+    public $genre;
     
 
     /**
@@ -85,5 +85,51 @@ class MovieGenre
     public function getGenres()
     {
         return $this->genres;
+    }
+
+    /**
+     * Set movie
+     *
+     * @param \Entity\Movie $movie
+     * @return MovieGenre
+     */
+    public function setMovie(\Entity\Movie $movie = null)
+    {
+        $this->movie = $movie;
+
+        return $this;
+    }
+
+    /**
+     * Get movie
+     *
+     * @return \Entity\Movie 
+     */
+    public function getMovie()
+    {
+        return $this->movie;
+    }
+
+    /**
+     * Set genre
+     *
+     * @param \Entity\Genre $genre
+     * @return MovieGenre
+     */
+    public function setGenre(\Entity\Genre $genre = null)
+    {
+        $this->genre = $genre;
+
+        return $this;
+    }
+
+    /**
+     * Get genre
+     *
+     * @return \Entity\Genre 
+     */
+    public function getGenre()
+    {
+        return $this->genre;
     }
 }

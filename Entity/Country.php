@@ -24,15 +24,16 @@ class Country
     public $name;
     
     /**
-     * @ORM\OneToMany(targetEntity="MovieCountry", mappedBy="countries")
+     * @ORM\OneToMany(targetEntity="MovieCountry", mappedBy="country")
      **/
-    public $movies_countries;
+    public $country_movies;
+ 
     /**
      * Constructor
      */
     public function __construct()
     {
-        $this->movies_countries = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->country_movies = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     /**
@@ -69,35 +70,35 @@ class Country
     }
 
     /**
-     * Add movies_countries
+     * Add country_movies
      *
-     * @param \Entity\MovieCountry $moviesCountries
+     * @param \Entity\MovieCountry $countryMovies
      * @return Country
      */
-    public function addMoviesCountry(\Entity\MovieCountry $moviesCountries)
+    public function addCountryMovie(\Entity\MovieCountry $countryMovies)
     {
-        $this->movies_countries[] = $moviesCountries;
+        $this->country_movies[] = $countryMovies;
 
         return $this;
     }
 
     /**
-     * Remove movies_countries
+     * Remove country_movies
      *
-     * @param \Entity\MovieCountry $moviesCountries
+     * @param \Entity\MovieCountry $countryMovies
      */
-    public function removeMoviesCountry(\Entity\MovieCountry $moviesCountries)
+    public function removeCountryMovie(\Entity\MovieCountry $countryMovies)
     {
-        $this->movies_countries->removeElement($moviesCountries);
+        $this->country_movies->removeElement($countryMovies);
     }
 
     /**
-     * Get movies_countries
+     * Get country_movies
      *
      * @return \Doctrine\Common\Collections\Collection 
      */
-    public function getMoviesCountries()
+    public function getCountryMovies()
     {
-        return $this->movies_countries;
+        return $this->country_movies;
     }
 }
