@@ -1,29 +1,35 @@
 <?php
 
-use Doctrine\ORM\Tools\Setup;
-use Doctrine\ORM\EntityManager;
+
 
 class MoviesCrawler {
 
     private $baseUrl = "http://www.primewire.ag";
+    private $db;
 
-    public function construct() {
-        
+    public function __construct() {
+        $this->db = Utils\Db::getInstance();
     }
 
     public function parseMoviePage($url) {
         $movie = array();
-        $html = file_get_contents($url);
-
-        $doc = new DOMDocument();
-        @$doc->loadHTML($html);
-        $xpath = new DOMXPath($doc);
-
         $querystring = str_replace($this->baseUrl, "", $url);
         preg_match("/\/watch-(\d*)-/", $querystring, $m);
         if (isset($m[1])) {
             $movie['prime_id'] = $m[1];
         }
+        
+        $rec = $this->db->getTable("Movie")->find($movie['prime_id']);
+        if ($rec) {
+            return false;
+        }
+        
+        
+        $html = file_get_contents($url);
+
+        $doc = new DOMDocument();
+        @$doc->loadHTML($html);
+        $xpath = new DOMXPath($doc);
 
         $query = "//div[@class='index_container']/div/h1[@class='titles']";
         $movie['title'] = trim($xpath->query($query)->item(0)->nodeValue);
@@ -109,7 +115,19 @@ class MoviesCrawler {
             $movie['imdb_link'] = $imdbLinkList->item(0)->getAttribute('href');
         }
         
-        var_dump($movie);
+        
+        $this->db->em->getConnection()->beginTransaction();
+        $movieObj = new Entity\Movie;
+        $movieObj->prime_id = $movie['prime_id'];
+        $movieObj->title = $movie['title'];
+        $movieObj->description = $movie['description'];
+        $movieObj->released = $movie['info']['released'];
+        $movieObj->runtime = $movie['info']['runtime'];
+        $movieObj->imdb_link = $movie['imdb_link'];
+        $this->db->em->persist($movieObj);
+        $this->db->em->flush();
+        $this->db->em->getConnection()->commit();
+        die("ok");
         return $movie;
     }
 
@@ -134,23 +152,12 @@ class MoviesCrawler {
 
 
 
-$paths = array("Entity");
-$isDevMode = true;
-$config = Setup::createAnnotationMetadataConfiguration($paths, $isDevMode, null, null, false);
 
-$conn = array(
-           'driver' => 'pdo_mysql',
-           'user' => 'root',
-           'password' => "m4!x#cc8f",
-           'dbname' => 'crawler',
-       );
-// obtaining the entity manager
-$em = EntityManager::create($conn, $config);
 
-$q = $em->createQueryBuilder()->select('u')->from('Entity\User','u')->getQuery();
-$res = $q->getArrayResult();
-p($res);
-die; 
+//$q = $em->createQueryBuilder()->select('u')->from('Entity\User','u')->getQuery();
+//$res = $q->getArrayResult();
+//p($res);
+//die; 
 
 $url = "http://www.primewire.ag/?sort=date";
 $crawler = new MoviesCrawler();

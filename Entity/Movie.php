@@ -7,7 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="movie", indexes={@ORM\Index(name="title_idx", columns={"title"}), @ORM\Index(name="prime_id_idx", columns={"prime_id"})})
+ * @ORM\Table(name="movie", indexes={@ORM\Index(name="movie__title__idx", columns={"title"}), @ORM\Index(name="movie__prime_id__idx", columns={"prime_id"})})
  */
 class Movie
 {    
@@ -29,7 +29,7 @@ class Movie
     public $title;
     
     /**
-     * @ORM\Column(type="string", nullable=true)
+     * @ORM\Column(type="text", nullable=true)
      */
     public $description;
     
@@ -53,6 +53,15 @@ class Movie
      **/
     public $movies_jenres;
     
+    /**
+     * @ORM\OneToMany(targetEntity="MovieCountry", mappedBy="movies")
+     **/
+    public $movies_countries;
+    
+    /**
+     * @ORM\OneToMany(targetEntity="MovieLink", mappedBy="movies")
+     **/
+    public $links;
     
     /**
      * Constructor
@@ -241,5 +250,71 @@ class Movie
     public function getMoviesJenres()
     {
         return $this->movies_jenres;
+    }
+
+    /**
+     * Add movies_countries
+     *
+     * @param \Entity\MovieCountry $moviesCountries
+     * @return Movie
+     */
+    public function addMoviesCountry(\Entity\MovieCountry $moviesCountries)
+    {
+        $this->movies_countries[] = $moviesCountries;
+
+        return $this;
+    }
+
+    /**
+     * Remove movies_countries
+     *
+     * @param \Entity\MovieCountry $moviesCountries
+     */
+    public function removeMoviesCountry(\Entity\MovieCountry $moviesCountries)
+    {
+        $this->movies_countries->removeElement($moviesCountries);
+    }
+
+    /**
+     * Get movies_countries
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getMoviesCountries()
+    {
+        return $this->movies_countries;
+    }
+
+    /**
+     * Add links
+     *
+     * @param \Entity\MovieLink $links
+     * @return Movie
+     */
+    public function addLink(\Entity\MovieLink $links)
+    {
+        $this->links[] = $links;
+
+        return $this;
+    }
+
+    /**
+     * Remove links
+     *
+     * @param \Entity\MovieLink $links
+     */
+    public function removeLink(\Entity\MovieLink $links)
+    {
+        $this->links->removeElement($links);
+    }
+
+    /**
+     * Get links
+     *
+     * @return \Doctrine\Common\Collections\Collection 
+     */
+    public function getLinks()
+    {
+        return $this->links;
     }
 }
