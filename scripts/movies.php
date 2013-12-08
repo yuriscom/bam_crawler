@@ -117,6 +117,7 @@ class MoviesCrawler {
         
         
         $this->db->em->getConnection()->beginTransaction();
+        
         $movieObj = new Entity\Movie;
         $movieObj->prime_id = $movie['prime_id'];
         $movieObj->title = $movie['title'];
@@ -126,7 +127,31 @@ class MoviesCrawler {
         $movieObj->imdb_link = $movie['imdb_link'];
         $this->db->em->persist($movieObj);
         $this->db->em->flush();
+        
+        foreach ($movie['links'] as $link) {
+            $linkObj = new Entity\MovieLink;
+            $linkObj->movie_id = $movieObj->id;
+            $linkObj->link = $link['url'];
+            $linkObj->version = $link['version'];
+            $this->db->em->persist($linkObj);
+            $this->db->em->flush();
+        }
+        
+        if (is_array($movie['info']['genres'])) {
+            foreach ($movie['info']['genres'] as $jenre) {
+                $jenreObj = $this->db->getTable("genre")->findBy(array("name"=>$jenre));
+                p($jenreObj); die;
+
+            }
+        }
+        
+        
+        
+        
         $this->db->em->getConnection()->commit();
+        
+        
+        
         die("ok");
         return $movie;
     }

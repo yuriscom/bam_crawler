@@ -7,9 +7,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="jenre", indexes={@ORM\Index(name="jenre__name__idx", columns={"name"})})
+ * @ORM\Table(name="country", indexes={@ORM\Index(name="country__name__idx", columns={"name"})})
  */
-class Jenre
+class Country
 {    
     /**
      * @ORM\Column(type="integer")
@@ -24,16 +24,15 @@ class Jenre
     public $name;
     
     /**
-     * @ORM\OneToMany(targetEntity="MovieJenre", mappedBy="jenres")
+     * @ORM\OneToMany(targetEntity="MovieCountry", mappedBy="countries")
      **/
-    public $movies_jenres;
-
+    public $movies_countries;
     /**
      * Constructor
      */
     public function __construct()
     {
-        $this->movies_jenres = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->movies_countries = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     /**
@@ -50,7 +49,7 @@ class Jenre
      * Set name
      *
      * @param string $name
-     * @return Jenre
+     * @return Country
      */
     public function setName($name)
     {
@@ -70,35 +69,35 @@ class Jenre
     }
 
     /**
-     * Add movies_jenres
+     * Add movies_countries
      *
-     * @param \Entity\MovieJenre $moviesJenres
-     * @return Jenre
+     * @param \Entity\MovieCountry $moviesCountries
+     * @return Country
      */
-    public function addMoviesJenre(\Entity\MovieJenre $moviesJenres)
+    public function addMoviesCountry(\Entity\MovieCountry $moviesCountries)
     {
-        $this->movies_jenres[] = $moviesJenres;
+        $this->movies_countries[] = $moviesCountries;
 
         return $this;
     }
 
     /**
-     * Remove movies_jenres
+     * Remove movies_countries
      *
-     * @param \Entity\MovieJenre $moviesJenres
+     * @param \Entity\MovieCountry $moviesCountries
      */
-    public function removeMoviesJenre(\Entity\MovieJenre $moviesJenres)
+    public function removeMoviesCountry(\Entity\MovieCountry $moviesCountries)
     {
-        $this->movies_jenres->removeElement($moviesJenres);
+        $this->movies_countries->removeElement($moviesCountries);
     }
 
     /**
-     * Get movies_jenres
+     * Get movies_countries
      *
      * @return \Doctrine\Common\Collections\Collection 
      */
-    public function getMoviesJenres()
+    public function getMoviesCountries()
     {
-        return $this->movies_jenres;
+        return $this->movies_countries;
     }
 }

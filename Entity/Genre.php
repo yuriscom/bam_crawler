@@ -7,9 +7,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="jenre", indexes={@ORM\Index(name="jenre__name__idx", columns={"name"})})
+ * @ORM\Table(name="genre", indexes={@ORM\Index(name="genre__name__idx", columns={"name"})})
  */
-class Jenre
+class Genre
 {    
     /**
      * @ORM\Column(type="integer")
@@ -24,16 +24,16 @@ class Jenre
     public $name;
     
     /**
-     * @ORM\OneToMany(targetEntity="MovieJenre", mappedBy="jenres")
+     * @ORM\OneToMany(targetEntity="MovieGenre", mappedBy="genres")
      **/
-    public $movies_jenres;
+    public $movies_genres;
 
     /**
      * Constructor
      */
     public function __construct()
     {
-        $this->movies_jenres = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->movies_genres = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     /**
@@ -50,7 +50,7 @@ class Jenre
      * Set name
      *
      * @param string $name
-     * @return Jenre
+     * @return Genre
      */
     public function setName($name)
     {
@@ -70,35 +70,35 @@ class Jenre
     }
 
     /**
-     * Add movies_jenres
+     * Add movies_genres
      *
-     * @param \Entity\MovieJenre $moviesJenres
-     * @return Jenre
+     * @param \Entity\MovieGenre $moviesGenres
+     * @return Genre
      */
-    public function addMoviesJenre(\Entity\MovieJenre $moviesJenres)
+    public function addMoviesGenre(\Entity\MovieGenre $moviesGenres)
     {
-        $this->movies_jenres[] = $moviesJenres;
+        $this->movies_genres[] = $moviesGenres;
 
         return $this;
     }
 
     /**
-     * Remove movies_jenres
+     * Remove movies_genres
      *
-     * @param \Entity\MovieJenre $moviesJenres
+     * @param \Entity\MovieGenre $moviesGenres
      */
-    public function removeMoviesJenre(\Entity\MovieJenre $moviesJenres)
+    public function removeMoviesGenre(\Entity\MovieGenre $moviesGenres)
     {
-        $this->movies_jenres->removeElement($moviesJenres);
+        $this->movies_genres->removeElement($moviesGenres);
     }
 
     /**
-     * Get movies_jenres
+     * Get movies_genres
      *
      * @return \Doctrine\Common\Collections\Collection 
      */
-    public function getMoviesJenres()
+    public function getMoviesGenres()
     {
-        return $this->movies_jenres;
+        return $this->movies_genres;
     }
 }

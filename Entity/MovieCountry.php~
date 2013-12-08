@@ -7,9 +7,9 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="movie_jenre")
+ * @ORM\Table(name="movie_country")
  */
-class MovieJenre
+class MovieCountry
 {    
     /**
      * @ORM\Column(type="integer")
@@ -19,17 +19,16 @@ class MovieJenre
     public $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Movie", inversedBy="movie_jenre")
+     * @ORM\ManyToOne(targetEntity="Movie", inversedBy="movie_country")
      * @ORM\JoinColumn(name="movie_id", referencedColumnName="id", onDelete="CASCADE")
      **/
     public $movies;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Jenre", inversedBy="movie_jenre")
-     * @ORM\JoinColumn(name="jenre_id", referencedColumnName="id", onDelete="CASCADE")
+     * @ORM\ManyToOne(targetEntity="Country", inversedBy="movie_country")
+     * @ORM\JoinColumn(name="country_id", referencedColumnName="id", onDelete="CASCADE")
      **/
-    public $jenres;
-    
+    public $countries;
 
     /**
      * Get id
@@ -45,7 +44,7 @@ class MovieJenre
      * Set movies
      *
      * @param \Entity\Movie $movies
-     * @return MovieJenre
+     * @return MovieCountry
      */
     public function setMovies(\Entity\Movie $movies = null)
     {
@@ -65,25 +64,25 @@ class MovieJenre
     }
 
     /**
-     * Set jenres
+     * Set countries
      *
-     * @param \Entity\Jenre $jenres
-     * @return MovieJenre
+     * @param \Entity\Country $countries
+     * @return MovieCountry
      */
-    public function setJenres(\Entity\Jenre $jenres = null)
+    public function setCountries(\Entity\Country $countries = null)
     {
-        $this->jenres = $jenres;
+        $this->countries = $countries;
 
         return $this;
     }
 
     /**
-     * Get jenres
+     * Get countries
      *
-     * @return \Entity\Jenre 
+     * @return \Entity\Country 
      */
-    public function getJenres()
+    public function getCountries()
     {
-        return $this->jenres;
+        return $this->countries;
     }
 }
