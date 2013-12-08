@@ -146,55 +146,57 @@ class MoviesCrawler {
             $this->db->em->flush();
         }
 
+        if (is_array($movie['info']['genres'])) {
+            foreach ($movie['info']['genres'] as $genre) {
+                $genreObjAr = $this->db->getTable("Genre")->findBy(array("name" => $genre));
+                if (!count($genreObjAr)) {
+                    $genreObj = new Entity\Genre();
+                    $genreObj->name = $genre;
+                    $this->db->em->persist($genreObj);
+                    $this->db->em->flush();
+                } else {
+                    $genreObj = current($genreObjAr);
+                }
 
-        foreach ($movie['info']['genres'] as $genre) {
-            $genreObjAr = $this->db->getTable("Genre")->findBy(array("name" => $genre));
-            if (!count($genreObjAr)) {
-                $genreObj = new Entity\Genre();
-                $genreObj->name = $genre;
-                $this->db->em->persist($genreObj);
+                $movieGenreObj = new Entity\MovieGenre();
+                $movieGenreObj->movie = $movieObj;
+                $movieGenreObj->genre = $genreObj;
+                $this->db->em->persist($movieGenreObj);
                 $this->db->em->flush();
-            } else {
-                $genreObj = current($genreObjAr);
             }
-
-            $movieGenreObj = new Entity\MovieGenre();
-            $movieGenreObj->movie = $movieObj;
-            $movieGenreObj->genre = $genreObj;
-            $this->db->em->persist($movieGenreObj);
-            $this->db->em->flush();
         }
 
 
+        if (is_array($movie['info']['countries'])) {
+            foreach ($movie['info']['countries'] as $country) {
+                $countryObjAr = $this->db->getTable("Country")->findBy(array("name" => $country));
+                if (!count($countryObjAr)) {
+                    $countryObj = new Entity\Country;
+                    $countryObj->name = $country;
+                    $this->db->em->persist($countryObj);
+                    $this->db->em->flush();
+                } else {
+                    $countryObj = current($countryObjAr);
+                }
 
-        foreach ($movie['info']['countries'] as $country) {
-            $countryObjAr = $this->db->getTable("Country")->findBy(array("name" => $country));
-            if (!count($countryObjAr)) {
-                $countryObj = new Entity\Country;
-                $countryObj->name = $country;
-                $this->db->em->persist($countryObj);
+                $movieCountryObj = new Entity\MovieCountry();
+                $movieCountryObj->movie = $movieObj;
+                $movieCountryObj->country = $countryObj;
+                $this->db->em->persist($movieCountryObj);
                 $this->db->em->flush();
-            } else {
-                $countryObj = current($countryObjAr);
             }
-
-            $movieCountryObj = new Entity\MovieCountry();
-            $movieCountryObj->movie = $movieObj;
-            $movieCountryObj->country = $countryObj;
-            $this->db->em->persist($movieCountryObj);
-            $this->db->em->flush();
         }
-
 
         $this->db->em->getConnection()->commit();
 
-        return true;
+        return $movie;
     }
 
     public function parseMoviesPage() {
         $statusObj = $this->db->getTable("CrawlerStatus")->find(1);
         $page = $statusObj->page + 1;
-        for ($i = $page; $i <= $page+$this->pagesPerRun; $i++) {
+        for ($i = $page; $i <= $page + $this->pagesPerRun; $i++) {
+            echo "parsing page ".$i."\n";
             $url = $this->baseUrl . "/?sort=alphabet&page=" . $i;
             $html = file_get_contents($url);
             $doc = new DOMDocument();
@@ -202,17 +204,24 @@ class MoviesCrawler {
             $xpath = new DOMXPath($doc);
             $query = "//div[@class='index_item index_item_ie']";
             $resultsList = $xpath->query($query);
-            for ($i = 0; $i < $resultsList->length; $i++) {
-                $curNode = $resultsList->item($i);
+            for ($j = 0; $j < $resultsList->length; $j++) {
+                $curNode = $resultsList->item($j);
                 $linkNode = $xpath->query("a", $curNode)->item(0);
                 $link = $this->baseUrl . $linkNode->getAttribute('href');
-                $this->parseMoviePage($link);
+                $ret = $this->parseMoviePage($link);
+                if ($ret) {
+                    echo "saved: " . $ret['title'] . "\n";
+                } else {
+                    echo "movie wasn't saved\n";
+                }
             }
         }
+        $statusObj->page = $i-1;
+        $this->db->em->persist($statusObj);
+        $this->db->em->flush();
     }
 
 }
-
 
 $crawler = new MoviesCrawler();
 $crawler->parseMoviesPage();
