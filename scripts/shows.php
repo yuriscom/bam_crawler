@@ -278,7 +278,7 @@ class ShowsCrawler {
     public function parseShowsPage() {
         $statusObj = $this->db->getTable("CrawlerStatus")->find(2);
         $page = $statusObj->page + 1;
-        for ($i = $page; $i <= $page + $this->pagesPerRun; $i++) {
+        for ($i = $page; $i < $page + $this->pagesPerRun; $i++) {
             echo "parsing page " . $i . "\n";
             $url = $this->baseUrl . "/?tv=&sort=views&page=" . $i;
             $html = file_get_contents($url);

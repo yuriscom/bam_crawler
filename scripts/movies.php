@@ -3,7 +3,7 @@
 class MoviesCrawler {
 
     private $baseUrl = "http://www.primewire.ag";
-    private $pagesPerRun = 3;
+    private $pagesPerRun = 5;
     private $db;
 
     public function __construct() {
@@ -195,7 +195,7 @@ class MoviesCrawler {
     public function parseMoviesPage() {
         $statusObj = $this->db->getTable("CrawlerStatus")->find(1);
         $page = $statusObj->page + 1;
-        for ($i = $page; $i <= $page + $this->pagesPerRun; $i++) {
+        for ($i = $page; $i < $page + $this->pagesPerRun; $i++) {
             echo "parsing page ".$i."\n";
             $url = $this->baseUrl . "/?sort=alphabet&page=" . $i;
             $html = file_get_contents($url);
