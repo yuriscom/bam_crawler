@@ -28,9 +28,9 @@ class ShowsCrawler {
         @$doc->loadHTML($html);
         $xpath = new DOMXPath($doc);
 
-        $showObj = $this->db->getTable("Show")->findBy(array("prime_id" => $show['prime_id']));
+        $showObjAr = $this->db->getTable("Show")->findBy(array("prime_id" => $show['prime_id']));
 
-        if (!$showObj) {
+        if (!count($showObjAr)) {
             $query = "//div[@class='index_container']/div/h1[@class='titles']";
             $show['title'] = trim($xpath->query($query)->item(0)->nodeValue);
 
@@ -134,8 +134,10 @@ class ShowsCrawler {
                     $this->db->em->flush();
                 }
             }
-
+            echo "saving show ".$showObj->title."\n";
             $this->db->em->getConnection()->commit();
+        } else {
+            $showObj = current($showObjAr);
         }
 
         // go through episodes
@@ -168,6 +170,11 @@ class ShowsCrawler {
         $episode['season'] = $m[1];
         $episode['episode'] = $m[2];
 
+        $episodeObjAr = $this->db->getTable("Show")->findBy(array("season" => $episode['season'], "episode"=>$episode['episode']));
+        if (count($episodeObjAr)) {
+            return false;
+        }
+        
         $html = file_get_contents($url);
 
         $doc = new DOMDocument();
@@ -270,6 +277,7 @@ class ShowsCrawler {
             $this->db->em->flush();
         }
         
+        echo "saving episode ".$showObj->title." season ".$episode['season']." episode ".$episode['episode']."\n";
         $this->db->em->getConnection()->commit();
         
         return $episode;

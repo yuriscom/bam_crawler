@@ -24,8 +24,7 @@ class MoviesCrawler {
         }
 
         $rec = $this->db->getTable("Movie")->findBy(array("prime_id" => $movie['prime_id']));
-
-        if ($rec) {
+        if (count($rec)) {
             return false;
         }
 
