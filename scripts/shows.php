@@ -170,8 +170,9 @@ class ShowsCrawler {
         $episode['season'] = $m[1];
         $episode['episode'] = $m[2];
 
-        $episodeObjAr = $this->db->getTable("Show")->findBy(array("season" => $episode['season'], "episode"=>$episode['episode']));
+        $episodeObjAr = $this->db->getTable("ShowEpisode")->findBy(array("season" => $episode['season'], "episode"=>$episode['episode']));
         if (count($episodeObjAr)) {
+            echo "episode ".$showObj->title." season ".$episode['season']." episode ".$episode['episode']." already exists\n";
             return false;
         }
         

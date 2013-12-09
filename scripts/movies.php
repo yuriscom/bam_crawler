@@ -25,7 +25,7 @@ class MoviesCrawler {
 
         $rec = $this->db->getTable("Movie")->findBy(array("prime_id" => $movie['prime_id']));
         if (count($rec)) {
-            return false;
+            return 1;
         }
 
 
@@ -120,7 +120,7 @@ class MoviesCrawler {
         }
 
         if (!isset($movie['title'])) {
-            return false;
+            return 2;
         }
 
         // saving to db
@@ -208,10 +208,21 @@ class MoviesCrawler {
                 $linkNode = $xpath->query("a", $curNode)->item(0);
                 $link = $this->baseUrl . $linkNode->getAttribute('href');
                 $ret = $this->parseMoviePage($link);
-                if ($ret) {
+                
+                if (is_array($ret)) {
                     echo "saved: " . $ret['title'] . "\n";
                 } else {
-                    echo "movie wasn't saved\n";
+                    switch ($ret) {
+                        case 1:
+                            echo "link ".$link. " already exists\n";
+                            break;
+                        case 2:
+                            echo "couldn't parse title of link ".$link."\n";
+                            break;
+                        default:
+                            echo "movie wasn't saved of link ".$link."\n";
+                            break;
+                    }
                 }
             }
         }
