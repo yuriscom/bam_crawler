@@ -20,7 +20,7 @@ class Db {
         $params = array(
             'driver' => 'pdo_mysql',
             'user' => 'root',
-            'password' => "m4!x#cc8f",
+            'password' => "se9FjGogPv",
             'dbname' => 'crawler',
         );
 

@@ -65,7 +65,7 @@ $cli->setCatchExceptions(true);
 $cli->setHelperSet($helperSet);
 
 ConsoleRunner::addCommands($cli);
-
+/*
 $cli->addCommands(array(
 
    // Migrations Commands
@@ -83,5 +83,5 @@ $cli->addCommands(array(
    new \Doctrine\DBAL\Migrations\Tools\Console\Command\VersionCommand()
 
 ));
-
+*/
 $cli->run();	

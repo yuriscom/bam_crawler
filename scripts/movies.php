@@ -29,8 +29,8 @@ class MoviesCrawler {
         }
 
 
-        $html = file_get_contents($url);
-
+        //$html = file_get_contents($url);
+	$html = $this->getContent($url);
         $doc = new DOMDocument();
         @$doc->loadHTML($html);
         $xpath = new DOMXPath($doc);
@@ -197,7 +197,8 @@ class MoviesCrawler {
         for ($i = $page; $i < $page + $this->pagesPerRun; $i++) {
             echo "parsing page ".$i."\n";
             $url = $this->baseUrl . "/?sort=alphabet&page=" . $i;
-            $html = file_get_contents($url);
+            //$html = file_get_contents($url);
+	    $html = $this->getContent($url);
             $doc = new DOMDocument();
             @$doc->loadHTML($html);
             $xpath = new DOMXPath($doc);
@@ -230,6 +231,15 @@ class MoviesCrawler {
         $this->db->em->persist($statusObj);
         $this->db->em->flush();
 	echo "Job finished\n";
+    }
+
+    private function getContent($url) {
+	ob_start();
+	system("wget -qO- '".$url."'");
+	$content = ob_get_clean();
+//print $content; die;
+//print substr($content,0,200); die;
+	return $content;
     }
 
 }

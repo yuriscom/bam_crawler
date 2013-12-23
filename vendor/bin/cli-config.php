@@ -27,7 +27,7 @@ $conn = array(
 
            'user' => 'root',
 
-           'password' => "m4!x#cc8f",
+           'password' => "se9FjGogPv",
 
            'dbname' => 'crawler',
 
