@@ -312,6 +312,7 @@ class ShowsCrawler {
         $statusObj->page = $i - 1;
         $this->db->em->persist($statusObj);
         $this->db->em->flush();
+	echo "Job finished\n";
     }
 
 }
