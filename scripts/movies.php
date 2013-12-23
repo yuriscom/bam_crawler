@@ -204,6 +204,9 @@ class MoviesCrawler {
             $xpath = new DOMXPath($doc);
             $query = "//div[@class='index_item index_item_ie']";
             $resultsList = $xpath->query($query);
+	    if (!$resultsList->length) {
+		echo "Probably we were banned again. Call Yuri\n\n";
+	    }
             for ($j = 0; $j < $resultsList->length; $j++) {
                 $curNode = $resultsList->item($j);
                 $linkNode = $xpath->query("a", $curNode)->item(0);
@@ -234,11 +237,34 @@ class MoviesCrawler {
     }
 
     private function getContent($url) {
+/*
 	ob_start();
 	system("wget -qO- '".$url."'");
 	$content = ob_get_clean();
+//p($content); die;
 //print $content; die;
 //print substr($content,0,200); die;
+*/
+
+	$data = array();
+	
+	$version = rand(5,40).".".rand(0,9);
+	$headers = array(
+                'Content-type: application/x-www-form-urlencoded',
+                'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/'.$version,
+        );
+
+        $context = stream_context_create(array
+            (
+            'http' => array(
+                'method' => 'GET',
+                'header' => $headers,
+                'content' => http_build_query($data)
+            )
+                ));
+
+        $content = file_get_contents($url, false, $context);
+
 	return $content;
     }
 
