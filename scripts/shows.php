@@ -5,9 +5,11 @@ class ShowsCrawler {
     private $baseUrl = "http://www.primewire.ag";
     private $pagesPerRun = 1;
     private $db;
+    private $flagfile;
 
     public function __construct() {
         $this->db = Utils\Db::getInstance();
+	$this->flagfile = getcwd()."/runningshows";
     }
 
     public function parseShowPage($url) {
@@ -22,7 +24,7 @@ class ShowsCrawler {
             $show['prime_id'] = $m[1];
         }
 
-        $html = file_get_contents($url);
+        $html = $this->getContent($url);
 
         $doc = new DOMDocument();
         @$doc->loadHTML($html);
@@ -170,13 +172,13 @@ class ShowsCrawler {
         $episode['season'] = $m[1];
         $episode['episode'] = $m[2];
 
-        $episodeObjAr = $this->db->getTable("ShowEpisode")->findBy(array("season" => $episode['season'], "episode"=>$episode['episode']));
+        $episodeObjAr = $this->db->getTable("ShowEpisode")->findBy(array("show"=>$showObj, "season" => $episode['season'], "episode"=>$episode['episode']));
         if (count($episodeObjAr)) {
             echo "episode ".$showObj->title." season ".$episode['season']." episode ".$episode['episode']." already exists\n";
             return false;
         }
         
-        $html = file_get_contents($url);
+        $html = $this->getContent($url);
 
         $doc = new DOMDocument();
         @$doc->loadHTML($html);
@@ -285,12 +287,16 @@ class ShowsCrawler {
     }
 
     public function parseShowsPage() {
+	if ($this->isRunning()) {
+		return;
+	}
+	$this->setRunning();
         $statusObj = $this->db->getTable("CrawlerStatus")->find(2);
         $page = $statusObj->page + 1;
         for ($i = $page; $i < $page + $this->pagesPerRun; $i++) {
             echo "parsing page " . $i . "\n";
             $url = $this->baseUrl . "/?tv=&sort=views&page=" . $i;
-            $html = file_get_contents($url);
+            $html = $this->getContent($url);
             $doc = new DOMDocument();
             @$doc->loadHTML($html);
             $xpath = new DOMXPath($doc);
@@ -313,7 +319,48 @@ class ShowsCrawler {
         $this->db->em->persist($statusObj);
         $this->db->em->flush();
 	echo "Job finished\n";
+	$this->setFinished();
     }
+
+    private function isRunning() {
+	if (is_file($this->flagfile)) {
+		return true;
+	}
+
+	return false;
+    }
+
+    private function setRunning() {
+	file_put_contents($this->flagfile,"1");
+    }
+
+    private function setFinished() {
+	@unlink($this->flagfile);
+    }
+
+    private function getContent($url) {
+        $data = array();
+
+        $version = rand(5,40).".".rand(0,9);
+        $headers = array(
+                'Content-type: application/x-www-form-urlencoded',
+                'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/'.$version,
+        );
+
+        $context = stream_context_create(array
+            (
+            'http' => array(
+                'method' => 'GET',
+                'header' => $headers,
+                'content' => http_build_query($data)
+            )
+                ));
+
+        $content = file_get_contents($url, false, $context);
+
+        return $content;
+    }
+
 
 }
 
