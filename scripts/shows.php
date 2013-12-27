@@ -1,5 +1,7 @@
 <?php
 
+declare(ticks = 1);
+
 class ShowsCrawler {
 
     private $baseUrl = "http://www.primewire.ag";
@@ -10,6 +12,28 @@ class ShowsCrawler {
     public function __construct() {
         $this->db = Utils\Db::getInstance();
 	$this->flagfile = getcwd()."/runningshows";
+//	pcntl_signal(SIGTERM, array($this, "sigHandler")); // for timeout
+	//register_shutdown_function(array($this,'shutdown'));
+    }
+
+    public function sigHandler($signo) {
+        switch ($signo) {
+            // read http://www.kernel.org/doc/man-pages/online/pages/man7/signal.7.html for the signal types
+           // case SIGINT:
+           // case SIGTSTP:
+             //   $message = "error: Terminated by user";
+              //  $this->_terminateProcess($message);
+               // break;
+            case SIGTERM:
+		$this->shutdown();
+                break;
+        }
+        exit;
+    }
+
+    public function shutdown() {
+	echo "Job finished\n";
+	$this->setFinished();
     }
 
     public function parseShowPage($url) {
@@ -291,6 +315,8 @@ class ShowsCrawler {
 		return;
 	}
 	$this->setRunning();
+	//register_shutdown_function('shutdown');
+	pcntl_signal(SIGTERM, array($this, "sigHandler")); // for timeout
         $statusObj = $this->db->getTable("CrawlerStatus")->find(2);
         $page = $statusObj->page + 1;
         for ($i = $page; $i < $page + $this->pagesPerRun; $i++) {
@@ -363,6 +389,8 @@ class ShowsCrawler {
 
 
 }
+
+
 
 $crawler = new ShowsCrawler();
 $crawler->parseShowsPage();
