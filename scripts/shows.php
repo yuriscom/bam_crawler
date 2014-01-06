@@ -367,7 +367,7 @@ class ShowsCrawler {
     private function getContent($url) {
         $data = array();
 
-        $version = rand(5,40).".".rand(0,9);
+        $version = rand(5,60).".".rand(0,9);
         $headers = array(
                 'Content-type: application/x-www-form-urlencoded',
                 'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/'.$version,
