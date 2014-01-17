@@ -44,6 +44,11 @@ class Show
     public $imdb_link;
     
     /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    public $updated_on;
+    
+    /**
      * @ORM\OneToMany(targetEntity="ShowGenre", mappedBy="show", cascade={"persist", "remove"})
      **/
     public $show_genres;

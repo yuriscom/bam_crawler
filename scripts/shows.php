@@ -8,32 +8,33 @@ class ShowsCrawler {
     private $pagesPerRun = 1;
     private $db;
     private $flagfile;
+    public $flag = array();
 
     public function __construct() {
         $this->db = Utils\Db::getInstance();
-	$this->flagfile = getcwd()."/runningshows";
+        $this->flagfile = getcwd() . "/runningshows";
 //	pcntl_signal(SIGTERM, array($this, "sigHandler")); // for timeout
-	//register_shutdown_function(array($this,'shutdown'));
+        //register_shutdown_function(array($this,'shutdown'));
     }
 
     public function sigHandler($signo) {
         switch ($signo) {
             // read http://www.kernel.org/doc/man-pages/online/pages/man7/signal.7.html for the signal types
-           // case SIGINT:
-           // case SIGTSTP:
-             //   $message = "error: Terminated by user";
-              //  $this->_terminateProcess($message);
-               // break;
+            // case SIGINT:
+            // case SIGTSTP:
+            //   $message = "error: Terminated by user";
+            //  $this->_terminateProcess($message);
+            // break;
             case SIGTERM:
-		$this->shutdown();
+                $this->shutdown();
                 break;
         }
         exit;
     }
 
     public function shutdown() {
-	echo "Job finished\n";
-	$this->setFinished();
+        echo "Job finished\n";
+        $this->setFinished();
     }
 
     public function parseShowPage($url) {
@@ -160,7 +161,7 @@ class ShowsCrawler {
                     $this->db->em->flush();
                 }
             }
-            echo "saving show ".$showObj->title."\n";
+            echo "saving show " . $showObj->title . "\n";
             $this->db->em->getConnection()->commit();
         } else {
             $showObj = current($showObjAr);
@@ -187,6 +188,8 @@ class ShowsCrawler {
         $episode['info']['genres'] = array();
         $episode['info']['countries'] = array();
 
+        $this->db->em->getConnection()->beginTransaction();
+        
         $querystring = str_replace($this->baseUrl, "", $url);
         preg_match("/\/season-(\d*)-episode-(\d*)/", $querystring, $m);
         if (count($m) != 3) {
@@ -196,12 +199,19 @@ class ShowsCrawler {
         $episode['season'] = $m[1];
         $episode['episode'] = $m[2];
 
-        $episodeObjAr = $this->db->getTable("ShowEpisode")->findBy(array("show"=>$showObj, "season" => $episode['season'], "episode"=>$episode['episode']));
+        $episodeObjAr = $this->db->getTable("ShowEpisode")->findBy(array("show" => $showObj, "season" => $episode['season'], "episode" => $episode['episode']));
         if (count($episodeObjAr)) {
-            echo "episode ".$showObj->title." season ".$episode['season']." episode ".$episode['episode']." already exists\n";
-            return false;
+            if ($this->flag['update']) {
+                $updating = 1;
+                $existingEpisodeObj = current($episodeObjAr);
+                $this->db->em->remove($existingEpisodeObj);
+                $this->db->em->flush();
+            } else {
+                echo "episode " . $showObj->title . " season " . $episode['season'] . " episode " . $episode['episode'] . " already exists\n";
+                return false;
+            }
         }
-        
+
         $html = $this->getContent($url);
 
         $doc = new DOMDocument();
@@ -283,8 +293,6 @@ class ShowsCrawler {
             }
         }
 
-        $this->db->em->getConnection()->beginTransaction();
-
         $episodeObj = new Entity\ShowEpisode();
         $episodeObj->season = $episode['season'];
         $episodeObj->episode = $episode['episode'];
@@ -292,9 +300,16 @@ class ShowsCrawler {
         $episodeObj->description = (isset($episode['description']) ? $episode['description'] : "");
         $episodeObj->air_date = (isset($episode['info']['air date']) ? $episode['info']['air date'] : "");
         $episodeObj->show = $showObj;
+        if ($updating) {
+            echo "updating episode " . $showObj->title . " season " . $episode['season'] . " episode " . $episode['episode'] . "\n";
+            $episodeObj->updated_on = new \DateTime(date("Y-m-d H:i:s"));
+            $showObj->updated_on = new \DateTime(date("Y-m-d H:i:s"));
+            $this->db->em->persist($showObj);
+            $this->db->em->flush();
+        }
         $this->db->em->persist($episodeObj);
         $this->db->em->flush();
-        
+
         foreach ($episode['links'] as $link) {
             $linkObj = new Entity\EpisodeLink();
             $linkObj->episode = $episodeObj;
@@ -303,25 +318,40 @@ class ShowsCrawler {
             $this->db->em->persist($linkObj);
             $this->db->em->flush();
         }
-        
-        echo "saving episode ".$showObj->title." season ".$episode['season']." episode ".$episode['episode']."\n";
+
+        echo "saving episode " . $showObj->title . " season " . $episode['season'] . " episode " . $episode['episode'] . "\n";
         $this->db->em->getConnection()->commit();
-        
+
         return $episode;
     }
 
     public function parseShowsPage() {
-	if ($this->isRunning()) {
-		return;
-	}
-	$this->setRunning();
-	//register_shutdown_function('shutdown');
-	pcntl_signal(SIGTERM, array($this, "sigHandler")); // for timeout
-        $statusObj = $this->db->getTable("CrawlerStatus")->find(2);
-        $page = $statusObj->page + 1;
-        for ($i = $page; $i < $page + $this->pagesPerRun; $i++) {
+        if ($this->isRunning()) {
+            return;
+        }
+        $this->setRunning();
+        //register_shutdown_function('shutdown');
+        pcntl_signal(SIGTERM, array($this, "sigHandler")); // for timeout
+
+        if ($this->flag['update']) {
+            $page = 1;
+            $toPage = (isset($this->flag['num_pages']) ? $this->flag['num_pages'] : 1);
+        } else {
+            $statusObj = $this->db->getTable("CrawlerStatus")->find(2);
+            $page = $statusObj->page + 1;
+            $toPage = $page + $this->pagesPerRun;
+        }
+
+
+        for ($i = $page; $i <= $toPage; $i++) {
             echo "parsing page " . $i . "\n";
-            $url = $this->baseUrl . "/?tv=&sort=views&page=" . $i;
+
+            if ($this->flag['update']) {
+                $url = $this->baseUrl . "/index.php?tv=&page=" . $i;
+            } else {
+                $url = $this->baseUrl . "/?tv=&sort=views&page=" . $i;
+            }
+
             $html = $this->getContent($url);
             $doc = new DOMDocument();
             @$doc->loadHTML($html);
@@ -341,36 +371,39 @@ class ShowsCrawler {
                 }
             }
         }
-        $statusObj->page = $i - 1;
-        $this->db->em->persist($statusObj);
-        $this->db->em->flush();
-	echo "Job finished\n";
-	$this->setFinished();
+
+        if (!$this->flag['update']) {
+            $statusObj->page = $i - 1;
+            $this->db->em->persist($statusObj);
+            $this->db->em->flush();
+        }
+        echo "Job finished\n";
+        $this->setFinished();
     }
 
     private function isRunning() {
-	if (is_file($this->flagfile)) {
-		return true;
-	}
+        if (is_file($this->flagfile)) {
+            return true;
+        }
 
-	return false;
+        return false;
     }
 
     private function setRunning() {
-	file_put_contents($this->flagfile,"1");
+        file_put_contents($this->flagfile, "1");
     }
 
     private function setFinished() {
-	@unlink($this->flagfile);
+        @unlink($this->flagfile);
     }
 
     private function getContent($url) {
         $data = array();
 
-        $version = rand(5,60).".".rand(0,9);
+        $version = rand(5, 60) . "." . rand(0, 9);
         $headers = array(
-                'Content-type: application/x-www-form-urlencoded',
-                'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/'.$version,
+            'Content-type: application/x-www-form-urlencoded',
+            'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/' . $version,
         );
 
         $context = stream_context_create(array
@@ -387,10 +420,10 @@ class ShowsCrawler {
         return $content;
     }
 
-
 }
 
-
-
 $crawler = new ShowsCrawler();
+if (isset($flag['update'])) {
+    $crawler->flag = $flag;
+}
 $crawler->parseShowsPage();
