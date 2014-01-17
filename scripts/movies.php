@@ -21,7 +21,7 @@ class MoviesCrawler {
         $updating = 0;
         // saving to db
         $this->db->em->getConnection()->beginTransaction();
-        
+
         $querystring = str_replace($this->baseUrl, "", $url);
         preg_match("/\/watch-(\d*)-/", $querystring, $m);
         if (isset($m[1])) {
@@ -203,11 +203,17 @@ class MoviesCrawler {
 
         return $movie;
     }
-    
+
     public function parseMoviesPage() {
-        $statusObj = $this->db->getTable("CrawlerStatus")->find(1);
-        $page = $statusObj->page + 1;
-        for ($i = $page; $i < $page + $this->pagesPerRun; $i++) {
+        if ($this->flag['update']) {
+            $page = 1;
+            $toPage = (isset($this->flag['num_pages']) ? $this->flag['num_pages'] : 1);
+        } else {
+            $statusObj = $this->db->getTable("CrawlerStatus")->find(1);
+            $page = $statusObj->page + 1;
+            $toPage = $page + $this->pagesPerRun;
+        }
+        for ($i = $page; $i < $toPage; $i++) {
             echo "parsing page " . $i . "\n";
             if ($this->flag['update']) {
                 $url = $this->baseUrl . "/?page=" . $i;
