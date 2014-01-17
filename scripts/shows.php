@@ -303,15 +303,19 @@ class ShowsCrawler {
         if ($updating) {
             echo "updating episode " . $showObj->title . " season " . $episode['season'] . " episode " . $episode['episode'] . "\n";
             $episodeObj->updated_on = new \DateTime(date("Y-m-d H:i:s"));
-            $showObj->updated_on = new \DateTime(date("Y-m-d H:i:s"));
+            //$showObj->updated_on = new \DateTime(date("Y-m-d H:i:s"));
             print "1\n";
+            /*
             $this->db->em->persist($showObj);
             $this->db->em->flush();
             print "2\n";
+             * 
+             */
         }
+        print "3\n";
         $this->db->em->persist($episodeObj);
         $this->db->em->flush();
-        print "3\n";
+        print "4\n";
 
         foreach ($episode['links'] as $link) {
             $linkObj = new Entity\EpisodeLink();
@@ -321,7 +325,7 @@ class ShowsCrawler {
             $this->db->em->persist($linkObj);
             $this->db->em->flush();
         }
-print "4\n";
+print "5\n";
         echo "saving episode " . $showObj->title . " season " . $episode['season'] . " episode " . $episode['episode'] . "\n";
         $this->db->em->getConnection()->commit();
 print "here"; die;
