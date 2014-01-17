@@ -5,9 +5,11 @@ class MoviesCrawler {
     private $baseUrl = "http://www.primewire.ag";
     private $pagesPerRun = 5;
     private $db;
+    public $flag = array();
 
     public function __construct() {
         $this->db = Utils\Db::getInstance();
+        $this->flag['update'] = 0;
     }
 
     public function parseMoviePage($url) {
@@ -16,7 +18,10 @@ class MoviesCrawler {
         $movie['info'] = array();
         $movie['info']['genres'] = array();
         $movie['info']['countries'] = array();
-
+        $updating = 0;
+        // saving to db
+        $this->db->em->getConnection()->beginTransaction();
+        
         $querystring = str_replace($this->baseUrl, "", $url);
         preg_match("/\/watch-(\d*)-/", $querystring, $m);
         if (isset($m[1])) {
@@ -25,12 +30,18 @@ class MoviesCrawler {
 
         $rec = $this->db->getTable("Movie")->findBy(array("prime_id" => $movie['prime_id']));
         if (count($rec)) {
+            if ($this->flag['update']) {
+                $updating = 1;
+                $existingMovieObj = current($rec);
+                $this->db->em->remove($existingMovieObj);
+                $this->db->em->flush();
+            }
             return 1;
         }
 
 
         //$html = file_get_contents($url);
-	$html = $this->getContent($url);
+        $html = $this->getContent($url);
         $doc = new DOMDocument();
         @$doc->loadHTML($html);
         $xpath = new DOMXPath($doc);
@@ -123,8 +134,6 @@ class MoviesCrawler {
             return 2;
         }
 
-        // saving to db
-        $this->db->em->getConnection()->beginTransaction();
 
         $movieObj = new Entity\Movie;
         $movieObj->prime_id = $movie['prime_id'];
@@ -133,6 +142,9 @@ class MoviesCrawler {
         $movieObj->released = (isset($movie['info']['released']) ? $movie['info']['released'] : "");
         $movieObj->runtime = (isset($movie['info']['runtime']) ? $movie['info']['runtime'] : "");
         $movieObj->imdb_link = (isset($movie['imdb_link']) ? $movie['imdb_link'] : "");
+        if ($updating) {
+            $movieObj->updated_on = new \DateTime(date("Y-m-d H:i:s"));
+        }
         $this->db->em->persist($movieObj);
         $this->db->em->flush();
 
@@ -190,68 +202,72 @@ class MoviesCrawler {
 
         return $movie;
     }
-
+    
     public function parseMoviesPage() {
         $statusObj = $this->db->getTable("CrawlerStatus")->find(1);
         $page = $statusObj->page + 1;
         for ($i = $page; $i < $page + $this->pagesPerRun; $i++) {
-            echo "parsing page ".$i."\n";
-            $url = $this->baseUrl . "/?sort=alphabet&page=" . $i;
+            echo "parsing page " . $i . "\n";
+            if ($this->flag['update']) {
+                $url = $this->baseUrl . "/?page=" . $i;
+            } else {
+                $url = $this->baseUrl . "/?sort=alphabet&page=" . $i;
+            }
             //$html = file_get_contents($url);
-	    $html = $this->getContent($url);
+            $html = $this->getContent($url);
             $doc = new DOMDocument();
             @$doc->loadHTML($html);
             $xpath = new DOMXPath($doc);
             $query = "//div[@class='index_item index_item_ie']";
             $resultsList = $xpath->query($query);
-	    if (!$resultsList->length) {
-		echo "Probably we were banned again. Call Yuri\n\n";
-	    }
+            if (!$resultsList->length) {
+                echo "Probably we were banned again. Call Yuri\n\n";
+            }
             for ($j = 0; $j < $resultsList->length; $j++) {
                 $curNode = $resultsList->item($j);
                 $linkNode = $xpath->query("a", $curNode)->item(0);
                 $link = $this->baseUrl . $linkNode->getAttribute('href');
                 $ret = $this->parseMoviePage($link);
-                
+
                 if (is_array($ret)) {
                     echo "saved: " . $ret['title'] . "\n";
                 } else {
                     switch ($ret) {
                         case 1:
-                            echo "link ".$link. " already exists\n";
+                            echo "link " . $link . " already exists\n";
                             break;
                         case 2:
-                            echo "couldn't parse title of link ".$link."\n";
+                            echo "couldn't parse title of link " . $link . "\n";
                             break;
                         default:
-                            echo "movie wasn't saved of link ".$link."\n";
+                            echo "movie wasn't saved of link " . $link . "\n";
                             break;
                     }
                 }
             }
         }
-        $statusObj->page = $i-1;
+        $statusObj->page = $i - 1;
         $this->db->em->persist($statusObj);
         $this->db->em->flush();
-	echo "Job finished\n";
+        echo "Job finished\n";
     }
 
     private function getContent($url) {
-/*
-	ob_start();
-	system("wget -qO- '".$url."'");
-	$content = ob_get_clean();
-//p($content); die;
-//print $content; die;
-//print substr($content,0,200); die;
-*/
+        /*
+          ob_start();
+          system("wget -qO- '".$url."'");
+          $content = ob_get_clean();
+          //p($content); die;
+          //print $content; die;
+          //print substr($content,0,200); die;
+         */
 
-	$data = array();
-	
-	$version = rand(5,40).".".rand(0,9);
-	$headers = array(
-                'Content-type: application/x-www-form-urlencoded',
-                'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/'.$version,
+        $data = array();
+
+        $version = rand(5, 40) . "." . rand(0, 9);
+        $headers = array(
+            'Content-type: application/x-www-form-urlencoded',
+            'User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/' . $version,
         );
 
         $context = stream_context_create(array
@@ -265,12 +281,15 @@ class MoviesCrawler {
 
         $content = file_get_contents($url, false, $context);
 
-	return $content;
+        return $content;
     }
 
 }
 
 $crawler = new MoviesCrawler();
+if (isset($flag['update'])) {
+    $crawler->flag = $flag;
+}
 $crawler->parseMoviesPage();
 //$crawler->parseMoviePage("http://www.primewire.ag/watch-226806-Race-Against-Time");
 //$crawler->parseMoviePage("http://www.primewire.ag/watch-2743041-The-Night-Clerk");

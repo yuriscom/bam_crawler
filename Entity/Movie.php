@@ -49,6 +49,11 @@ class Movie
     public $imdb_link;
     
     /**
+     * @ORM\Column(type="datetime", nullable=true)
+     */
+    public $updated_on;
+    
+    /**
      * @ORM\OneToMany(targetEntity="MovieGenre", mappedBy="movie")
      **/
     public $movie_genres;
