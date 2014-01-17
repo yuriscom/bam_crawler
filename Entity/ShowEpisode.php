@@ -50,7 +50,7 @@ class ShowEpisode
     public $show;
     
     /**
-     * @ORM\OneToMany(targetEntity="EpisodeLink", mappedBy="episode")
+     * @ORM\OneToMany(targetEntity="EpisodeLink", mappedBy="episode", cascade={"persist", "remove"})
      **/
     public $links;
     

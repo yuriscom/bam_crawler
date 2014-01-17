@@ -44,17 +44,17 @@ class Show
     public $imdb_link;
     
     /**
-     * @ORM\OneToMany(targetEntity="ShowGenre", mappedBy="show")
+     * @ORM\OneToMany(targetEntity="ShowGenre", mappedBy="show", cascade={"persist", "remove"})
      **/
     public $show_genres;
     
     /**
-     * @ORM\OneToMany(targetEntity="ShowCountry", mappedBy="show")
+     * @ORM\OneToMany(targetEntity="ShowCountry", mappedBy="show", cascade={"persist", "remove"})
      **/
     public $show_countries;
     
     /**
-     * @ORM\OneToMany(targetEntity="ShowEpisode", mappedBy="show")
+     * @ORM\OneToMany(targetEntity="ShowEpisode", mappedBy="show", cascade={"persist", "remove"})
      **/
     public $show_episodes;
     

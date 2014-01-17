@@ -54,17 +54,17 @@ class Movie
     public $updated_on;
     
     /**
-     * @ORM\OneToMany(targetEntity="MovieGenre", mappedBy="movie")
+     * @ORM\OneToMany(targetEntity="MovieGenre", mappedBy="movie", cascade={"persist", "remove"})
      **/
     public $movie_genres;
     
     /**
-     * @ORM\OneToMany(targetEntity="MovieCountry", mappedBy="movie")
+     * @ORM\OneToMany(targetEntity="MovieCountry", mappedBy="movie", cascade={"persist", "remove"})
      **/
     public $movie_countries;
     
     /**
-     * @ORM\OneToMany(targetEntity="MovieLink", mappedBy="movie")
+     * @ORM\OneToMany(targetEntity="MovieLink", mappedBy="movie", cascade={"persist", "remove"})
      **/
     public $links;
     
