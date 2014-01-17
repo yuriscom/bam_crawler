@@ -214,7 +214,7 @@ class MoviesCrawler {
             $page = $statusObj->page + 1;
             $toPage = $page + $this->pagesPerRun;
         }
-        for ($i = $page; $i < $toPage; $i++) {
+        for ($i = $page; $i <= $toPage; $i++) {
             echo "parsing page " . $i . "\n";
             if ($this->flag['update']) {
                 $url = $this->baseUrl . "/?page=" . $i;
