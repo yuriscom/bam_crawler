@@ -25,7 +25,7 @@ class ShowCountry
     public $show;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Country", inversedBy="movie_country", cascade={"persist", "remove"})
+     * @ORM\ManyToOne(targetEntity="Country", inversedBy="movie_country")
      * @ORM\JoinColumn(name="country_id", referencedColumnName="id", onDelete="CASCADE")
      **/
     public $country;
