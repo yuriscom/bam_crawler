@@ -49,17 +49,17 @@ class Show
     public $updated_on;
     
     /**
-     * @ORM\OneToMany(targetEntity="ShowGenre", mappedBy="show", cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity="ShowGenre", mappedBy="show")
      **/
     public $show_genres;
     
     /**
-     * @ORM\OneToMany(targetEntity="ShowCountry", mappedBy="show", cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity="ShowCountry", mappedBy="show")
      **/
     public $show_countries;
     
     /**
-     * @ORM\OneToMany(targetEntity="ShowEpisode", mappedBy="show", cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity="ShowEpisode", mappedBy="show")
      **/
     public $show_episodes;
     

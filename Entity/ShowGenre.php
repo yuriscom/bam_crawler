@@ -19,7 +19,7 @@ class ShowGenre
     public $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Show", inversedBy="show_genre", cascade={"persist", "remove"})
+     * @ORM\ManyToOne(targetEntity="Show", inversedBy="show_genre")
      * @ORM\JoinColumn(name="show_id", referencedColumnName="id", onDelete="CASCADE")
      **/
     public $show;

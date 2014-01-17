@@ -29,7 +29,7 @@ class EpisodeLink
     public $version;
     
     /**
-     * @ORM\ManyToOne(targetEntity="ShowEpisode", inversedBy="links", cascade={"persist", "remove"})
+     * @ORM\ManyToOne(targetEntity="ShowEpisode", inversedBy="links")
      * @ORM\JoinColumn(name="episode_id", referencedColumnName="id", onDelete="CASCADE")
      **/
     public $episode;

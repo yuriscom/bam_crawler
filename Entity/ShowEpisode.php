@@ -49,13 +49,13 @@ class ShowEpisode
     public $updated_on;
     
     /**
-     * @ORM\ManyToOne(targetEntity="Show", inversedBy="show_episodes", cascade={"persist", "remove"})
+     * @ORM\ManyToOne(targetEntity="Show", inversedBy="show_episodes")
      * @ORM\JoinColumn(name="show_id", referencedColumnName="id", onDelete="CASCADE")
      **/
     public $show;
     
     /**
-     * @ORM\OneToMany(targetEntity="EpisodeLink", mappedBy="episode", cascade={"persist", "remove"})
+     * @ORM\OneToMany(targetEntity="EpisodeLink", mappedBy="episode")
      **/
     public $links;
     

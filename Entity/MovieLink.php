@@ -29,7 +29,7 @@ class MovieLink
     public $version;
     
     /**
-     * @ORM\ManyToOne(targetEntity="Movie", inversedBy="movie_link", cascade={"persist", "remove"})
+     * @ORM\ManyToOne(targetEntity="Movie", inversedBy="movie_link")
      * @ORM\JoinColumn(name="movie_id", referencedColumnName="id", onDelete="CASCADE")
      **/
     public $movie;

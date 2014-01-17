@@ -189,7 +189,7 @@ class ShowsCrawler {
         $episode['info']['countries'] = array();
         $updating = 0;
         
-        $this->db->em->getConnection()->beginTransaction();
+        
         
         $querystring = str_replace($this->baseUrl, "", $url);
         preg_match("/\/season-(\d*)-episode-(\d*)/", $querystring, $m);
@@ -203,18 +203,24 @@ class ShowsCrawler {
         $episodeObjAr = $this->db->getTable("ShowEpisode")->findBy(array("show" => $showObj, "season" => $episode['season'], "episode" => $episode['episode']));
         if (count($episodeObjAr)) {
             if ($this->flag['update']) {
-                $updating = 1;
                 $existingEpisodeObj = current($episodeObjAr);
+                if ($existingEpisodeObj->updated_on && $existingEpisodeObj->updated_on->getTimestamp() > time()-21600) {
+                    // updated within 6 hours
+                    echo "episode " . $showObj->title . " season " . $episode['season'] . " episode " . $episode['episode'] . " is up to date\n";
+                    return false;
+                }
+                
                 $this->db->em->remove($existingEpisodeObj);
                 $this->db->em->flush();
+                
+                $updating = 1;
             } else {
                 echo "episode " . $showObj->title . " season " . $episode['season'] . " episode " . $episode['episode'] . " already exists\n";
                 return false;
             }
         }
-
         $html = $this->getContent($url);
-
+        $this->db->em->getConnection()->beginTransaction();
         $doc = new DOMDocument();
         @$doc->loadHTML($html);
         $xpath = new DOMXPath($doc);
@@ -304,6 +310,7 @@ class ShowsCrawler {
         if ($updating) {
             echo "updating episode " . $showObj->title . " season " . $episode['season'] . " episode " . $episode['episode'] . "\n";
             $episodeObj->updated_on = new \DateTime(date("Y-m-d H:i:s"));
+            $episodeObj->title = $episodeObj->title."2"; 
             $showObj->updated_on = new \DateTime(date("Y-m-d H:i:s"));
             $this->db->em->persist($showObj);
             $this->db->em->flush();
@@ -323,7 +330,7 @@ class ShowsCrawler {
 
         echo "saving episode " . $showObj->title . " season " . $episode['season'] . " episode " . $episode['episode'] . "\n";
         $this->db->em->getConnection()->commit();
-
+die("ok");
         return $episode;
     }
 
