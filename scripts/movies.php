@@ -143,6 +143,7 @@ class MoviesCrawler {
         $movieObj->runtime = (isset($movie['info']['runtime']) ? $movie['info']['runtime'] : "");
         $movieObj->imdb_link = (isset($movie['imdb_link']) ? $movie['imdb_link'] : "");
         if ($updating) {
+            echo "updating: " . $movieObj->title . "\n";
             $movieObj->updated_on = new \DateTime(date("Y-m-d H:i:s"));
         }
         $this->db->em->persist($movieObj);
