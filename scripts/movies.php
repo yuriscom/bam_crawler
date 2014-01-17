@@ -35,8 +35,9 @@ class MoviesCrawler {
                 $existingMovieObj = current($rec);
                 $this->db->em->remove($existingMovieObj);
                 $this->db->em->flush();
+            } else {
+                return 1;
             }
-            return 1;
         }
 
 
