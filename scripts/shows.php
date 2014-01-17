@@ -303,9 +303,12 @@ class ShowsCrawler {
         if ($updating) {
             echo "updating episode " . $showObj->title . " season " . $episode['season'] . " episode " . $episode['episode'] . "\n";
             $episodeObj->updated_on = new \DateTime(date("Y-m-d H:i:s"));
+            /*
             $showObj->updated_on = new \DateTime(date("Y-m-d H:i:s"));
             $this->db->em->persist($showObj);
             $this->db->em->flush();
+             * 
+             */
         }
         $this->db->em->persist($episodeObj);
         $this->db->em->flush();
