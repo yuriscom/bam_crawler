@@ -19,13 +19,13 @@ class MovieGenre
     public $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Movie", inversedBy="movie_genre")
+     * @ORM\ManyToOne(targetEntity="Movie", inversedBy="movie_genre", cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="movie_id", referencedColumnName="id", onDelete="CASCADE")
      **/
     public $movie;
 
     /**
-     * @ORM\ManyToOne(targetEntity="Genre", inversedBy="movie_genre")
+     * @ORM\ManyToOne(targetEntity="Genre", inversedBy="movie_genre", cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="genre_id", referencedColumnName="id", onDelete="CASCADE")
      **/
     public $genre;

@@ -44,7 +44,7 @@ class ShowEpisode
     public $air_date;
     
     /**
-     * @ORM\ManyToOne(targetEntity="Show", inversedBy="show_episodes")
+     * @ORM\ManyToOne(targetEntity="Show", inversedBy="show_episodes", cascade={"persist", "remove"})
      * @ORM\JoinColumn(name="show_id", referencedColumnName="id", onDelete="CASCADE")
      **/
     public $show;
