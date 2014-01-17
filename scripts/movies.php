@@ -254,9 +254,12 @@ class MoviesCrawler {
                 }
             }
         }
-        $statusObj->page = $i - 1;
-        $this->db->em->persist($statusObj);
-        $this->db->em->flush();
+
+        if (!$this->flag['update']) {
+            $statusObj->page = $i - 1;
+            $this->db->em->persist($statusObj);
+            $this->db->em->flush();
+        }
         echo "Job finished\n";
     }
 
