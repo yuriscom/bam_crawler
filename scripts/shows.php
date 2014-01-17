@@ -189,8 +189,6 @@ class ShowsCrawler {
         $episode['info']['countries'] = array();
         $updating = 0;
         
-        
-        
         $querystring = str_replace($this->baseUrl, "", $url);
         preg_match("/\/season-(\d*)-episode-(\d*)/", $querystring, $m);
         if (count($m) != 3) {
@@ -219,8 +217,10 @@ class ShowsCrawler {
                 return false;
             }
         }
-        $html = $this->getContent($url);
+        
         $this->db->em->getConnection()->beginTransaction();
+        
+        $html = $this->getContent($url);
         $doc = new DOMDocument();
         @$doc->loadHTML($html);
         $xpath = new DOMXPath($doc);
@@ -330,7 +330,7 @@ class ShowsCrawler {
 
         echo "saving episode " . $showObj->title . " season " . $episode['season'] . " episode " . $episode['episode'] . "\n";
         $this->db->em->getConnection()->commit();
-die("ok");
+
         return $episode;
     }
 
