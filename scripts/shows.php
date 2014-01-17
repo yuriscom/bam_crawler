@@ -300,18 +300,19 @@ class ShowsCrawler {
         $episodeObj->description = (isset($episode['description']) ? $episode['description'] : "");
         $episodeObj->air_date = (isset($episode['info']['air date']) ? $episode['info']['air date'] : "");
         $episodeObj->show = $showObj;
+        /*
         if ($updating) {
             echo "updating episode " . $showObj->title . " season " . $episode['season'] . " episode " . $episode['episode'] . "\n";
             $episodeObj->updated_on = new \DateTime(date("Y-m-d H:i:s"));
-            //$showObj->updated_on = new \DateTime(date("Y-m-d H:i:s"));
+            $showObj->updated_on = new \DateTime(date("Y-m-d H:i:s"));
             print "1\n";
-            /*
             $this->db->em->persist($showObj);
             $this->db->em->flush();
             print "2\n";
-             * 
-             */
         }
+         * 
+         */
+        
         print "3\n";
         $this->db->em->persist($episodeObj);
         $this->db->em->flush();
