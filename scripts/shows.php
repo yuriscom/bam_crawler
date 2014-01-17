@@ -369,7 +369,7 @@ class ShowsCrawler {
                 if ($ret) {
                     echo "saved: " . $ret['title'] . "\n";
                 } else {
-                    echo "movie wasn't saved\n";
+                    //echo "movie wasn't saved\n";
                 }
             }
         }
