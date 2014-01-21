@@ -42,7 +42,7 @@ class ShowsCrawler {
         $show['info'] = array();
         $show['info']['genres'] = array();
         $show['info']['countries'] = array();
-
+        $existing = 0;
         $querystring = str_replace($this->baseUrl, "", $url);
         preg_match("/\/watch-(\d*)-/", $querystring, $m);
         if (isset($m[1])) {
@@ -164,31 +164,37 @@ class ShowsCrawler {
             echo "saving show " . $showObj->title . "\n";
             $this->db->em->getConnection()->commit();
         } else {
+            $existing = 1;
             $showObj = current($showObjAr);
         }
 
         // go through episodes
         $query = "//div[@id='first']/div[@class='tv_container']";
         $showLinkTableList = $xpath->query($query);
+
         for ($i = 0; $i < $showLinkTableList->length; $i++) {
             $curNode = $showLinkTableList->item($i);
             $episodeLinkList = $xpath->query("div[@class='tv_episode_item']/a", $curNode);
             for ($j = 0; $j < $episodeLinkList->length; $j++) {
                 $curEpisodeLink = $episodeLinkList->item($j)->getAttribute('href');
                 $link = $this->baseUrl . $curEpisodeLink;
-                $ret = $this->parseEpisodePage($link, $showObj);
+                if ($this->flag['update']) {
+                    $ret = $this->parseEpisodePage($link, $showObj, $i, $showLinkTableList->length);
+                } else {
+                    $ret = $this->parseEpisodePage($link, $showObj);
+                }
             }
         }
     }
 
-    public function parseEpisodePage($url, $showObj) {
+    public function parseEpisodePage($url, $showObj, $curLinkI = null, $totalNumEpisodes = null) {
         $episode = array();
         $episode['links'] = array();
         $episode['info'] = array();
         $episode['info']['genres'] = array();
         $episode['info']['countries'] = array();
         $updating = 0;
-        
+
         $querystring = str_replace($this->baseUrl, "", $url);
         preg_match("/\/season-(\d*)-episode-(\d*)/", $querystring, $m);
         if (count($m) != 3) {
@@ -202,24 +208,26 @@ class ShowsCrawler {
         if (count($episodeObjAr)) {
             if ($this->flag['update']) {
                 $existingEpisodeObj = current($episodeObjAr);
-                if ($existingEpisodeObj->updated_on && $existingEpisodeObj->updated_on->getTimestamp() > time()-21600) {
+                $isPrevEpisode = ($totalNumEpisodes - 5 > $curLinkI + 1);
+                $isUpdatedRecently = ($existingEpisodeObj->updated_on && $existingEpisodeObj->updated_on->getTimestamp() > time() - 21600);
+                if ($isUpdatedRecently || $isPrevEpisode) {
                     // updated within 6 hours
                     echo "episode " . $showObj->title . " season " . $episode['season'] . " episode " . $episode['episode'] . " is up to date\n";
                     return false;
                 }
-                
+
                 $this->db->em->remove($existingEpisodeObj);
                 $this->db->em->flush();
-                
+
                 $updating = 1;
             } else {
                 echo "episode " . $showObj->title . " season " . $episode['season'] . " episode " . $episode['episode'] . " already exists\n";
                 return false;
             }
         }
-        
+
         $this->db->em->getConnection()->beginTransaction();
-        
+
         $html = $this->getContent($url);
         $doc = new DOMDocument();
         @$doc->loadHTML($html);
@@ -310,12 +318,12 @@ class ShowsCrawler {
         if ($updating) {
             echo "updating episode " . $showObj->title . " season " . $episode['season'] . " episode " . $episode['episode'] . "\n";
             $episodeObj->updated_on = new \DateTime(date("Y-m-d H:i:s"));
-            $episodeObj->title = $episodeObj->title."2"; 
+            $episodeObj->title = $episodeObj->title . "2";
             $showObj->updated_on = new \DateTime(date("Y-m-d H:i:s"));
             $this->db->em->persist($showObj);
             $this->db->em->flush();
         }
-        
+
         $this->db->em->persist($episodeObj);
         $this->db->em->flush();
 
