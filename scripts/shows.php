@@ -179,7 +179,7 @@ class ShowsCrawler {
                 $curEpisodeLink = $episodeLinkList->item($j)->getAttribute('href');
                 $link = $this->baseUrl . $curEpisodeLink;
                 if ($this->flag['update']) {
-                    $ret = $this->parseEpisodePage($link, $showObj, $i, $showLinkTableList->length);
+                    $ret = $this->parseEpisodePage($link, $showObj, $j, $episodeLinkList->length);
                 } else {
                     $ret = $this->parseEpisodePage($link, $showObj);
                 }
